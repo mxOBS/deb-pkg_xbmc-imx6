@@ -1,3 +1,9 @@
+kodi (2:15.0~git20150409-1) stable; urgency=low
+
+  * new packaging
+
+ -- Josua Mayer <unknown>  Thu, 09 Apr 2015 14:05:16 +0200
+
 kodi (2:14.0~git20141010-1) trusty; urgency=low
 
   * initial Kodi release

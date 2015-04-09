@@ -1,7 +1,7 @@
 Source: kodi
 Section: video
 Priority: optional
-Maintainer: wsnipex <wsnipex@xbmc.org>
+Maintainer: Josua Mayer <privacy@not.given>
 Build-Depends: debhelper (>= 7.0.50~),
  autoconf,
  automake,
@@ -94,8 +94,8 @@ Build-Depends: debhelper (>= 7.0.50~),
  zlib1g-dev
 Standards-Version: 3.9.4
 Homepage: http://kodi.tv/
-Vcs-Git: git://github.com/xbmc/xbmc-packaging.git
-Vcs-Browser: https://github.com/xbmc/xbmc-packaging
+Vcs-Git: https://github.com/mxOBS/deb-pkg_xbmc-imx6.git
+Vcs-Browser: https://github.com/mxOBS/deb-pkg_xbmc-imx6
 
 Package: kodi
 Architecture: all
