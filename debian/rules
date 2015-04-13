@@ -1,26 +1,50 @@
 #!/usr/bin/make -f
 
-# Set this variable to yes for release builds to disable debugging and enable
-# optimizations.
+# build configuration variables:
+# KODI_RELEASE [yes,no]
+# KODI_GL [gl,gles]
+# KODI_WS [x11,fb]
+# KODI_TARGET [imx]
+
+# choose some reasonable defaults
+# perform release build unless told otherwise
 KODI_RELEASE = yes
 
-# List of standard options to pass to configure.
-# Extra options can simply be passed using KODI_CONFIG_EXTRA_OPTIONS
+# on arm, default to gles
+ifeq (arm,$(shell dpkg-architecture -qDEB_HOST_ARCH_CPU))
+  KODI_GL ?= gles
+else
+  KODI_GL ?= gl
+endif
+
+# always default to x11
+KODI_WS ?= x11
+
+# build for i.MX SoC
+KODI_TARGET ?= imx
+
+# set generic build options
 KODI_CONFIG_OPTIONS = \
-  --enable-vdpau \
-  --enable-vaapi \
-  --disable-vtbdecoder \
-  --disable-openmax \
-  --disable-tegra \
   --disable-profiling \
+  --disable-asap-codec \
+  --disable-mid \
+  --disable-ccache \
+  --disable-mdnsembedded
+
+# release / debug build
+ifeq (yes,$(KODI_RELEASE))
+  KODI_CONFIG_OPTIONS += --disable-debug --enable-optimizations
+else
+  KODI_CONFIG_OPTIONS += --enable-debug --disable-optimizations
+endif
+
+# enable as many features as possible
+KODI_CONFIG_OPTIONS += \
   --enable-joystick \
   --enable-xrandr \
-  --disable-ccache \
   --enable-pulse \
   --enable-rtmp \
-  --disable-mid \
   --enable-avahi \
-  --disable-asap-codec \
   --enable-webserver \
   --enable-optical-drive \
   --enable-texturepacker \
@@ -30,27 +54,37 @@ KODI_CONFIG_OPTIONS = \
   --enable-airtunes \
   --enable-libbluray
 
-# select GL provider
-# On arm use OpenGL-ES
-# else default to OpenGL
-ifeq (arm,$(shell dpkg-architecture -qDEB_HOST_ARCH_CPU))
-  KODI_CONFIG_OPTIONS += --disable-gl --enable-gles
+# select renderer specific options
+ifeq (gles,$(KODI_GL))
+  KODI_CONFIG_OPTIONS += \
+    --disable-gl \
+    --disable-vdpau \
+    --disable-vaapi \
+    --enable-gles
 else
-  KODI_CONFIG_OPTIONS += --enable-gl --disable-gles
+  KODI_CONFIG_OPTIONS += \
+    --disable-gles \
+    --disable-openmax \
+    --disable-vtbdecoder \
+    --enable-gl \
+    --enable-vaapi \
+    --enable-vdpau
 endif
 
-# release / debug build
-ifeq (yes,$(KODI_RELEASE))
-  KODI_CONFIG_OPTIONS += --disable-debug --enable-optimizations
-else
-  KODI_CONFIG_OPTIONS += --enable-debug --disable-optimizations
-endif
+# additional compile flags
+KODI_EXTRA_FLAGS=
 
 # target-specific options
-KODI_CONFIG_EXTRA_OPTIONS = --enable-codec=imxvpu
-
-# mDNSresponder not found
-KODI_CONFIG_EXTRA_OPTIONS += --disable-mdnsembedded
+ifeq (imx, $(KODI_TARGET))
+  KODI_CONFIG_OPTIONS += --enable-codec=imxvpu
+  KODI_EXTRA_FLAGS += -DLINUX
+  ifeq (x11, $(KODI_WS))
+    KODI_EXTRA_FLAGS += -DEGL_API_X11
+  endif
+  ifeq(fb, $(KODI_WS))
+    KODI_EXTRA_FLAGS += -DEGL_API_FB
+  endif
+endif
 
 # sourcesdir for OBS builds
 SOURCESDIRS = /usr/src/packages/SOURCES/ ~/
@@ -66,7 +100,7 @@ override_dh_clean:
 override_dh_auto_configure: 
 	./bootstrap
 	find $(SOURCESDIRS) -maxdepth 1 -name ffmpeg-2.6.0-fix-Isengard-alpha.tar.gz -exec cp -v {} ./tools/depends/target/ffmpeg/ \; -quit || true
-	dh_auto_configure -- $(KODI_CONFIG_EXTRA_OPTIONS) $(KODI_CONFIG_EXTRA_OPTIONS)
+	dh_auto_configure -- $(KODI_CONFIG_OPTIONS) CFLAGS="$(CFLAGS) $(KODI_EXTRA_FLAGS)" CXXFLAGS="$(CXXFLAGS) $(KODI_EXTRA_FLAGS)"
 
 override_dh_auto_install:
 	$(MAKE) install DESTDIR=$(CURDIR)/debian/tmp
