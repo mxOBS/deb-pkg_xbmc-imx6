@@ -1,5 +1,8 @@
 #!/usr/bin/make -f
 
+# import standard compile flags
+include /usr/share/dpkg/buildflags.mk
+
 # build configuration variables:
 # KODI_RELEASE [yes,no]
 # KODI_GL [gl,gles]
@@ -19,6 +22,7 @@ endif
 
 # always default to x11
 KODI_WS ?= x11
+KODI_WS = fb
 
 # build for i.MX SoC
 KODI_TARGET ?= imx
@@ -41,7 +45,6 @@ endif
 # enable as many features as possible
 KODI_CONFIG_OPTIONS += \
   --enable-joystick \
-  --enable-xrandr \
   --enable-pulse \
   --enable-rtmp \
   --enable-avahi \
@@ -54,8 +57,8 @@ KODI_CONFIG_OPTIONS += \
   --enable-airtunes \
   --enable-libbluray
 
-# select renderer specific options
-ifeq (gles,$(KODI_GL))
+# select renderer-specific options
+ifeq (gles, $(KODI_GL))
   KODI_CONFIG_OPTIONS += \
     --disable-gl \
     --disable-vdpau \
@@ -71,18 +74,30 @@ else
     --enable-vdpau
 endif
 
+# select window-system-specific options
+ifeq (x11, $(KODI_WS))
+  KODI_CONFIG_OPTIONS += \
+    --enable-x11 \
+    --enable-xrandr
+endif
+ifeq (fb, $(KODI_WS))
+  KODI_CONFIG_OPTIONS += \
+    --disable-x11 \
+    --disable-xrandr
+endif
+
 # additional compile flags
-KODI_EXTRA_FLAGS=
+KODI_EXTRA_CFLAGS=
 
 # target-specific options
 ifeq (imx, $(KODI_TARGET))
-  KODI_CONFIG_OPTIONS += --enable-codec=imxvpu
-  KODI_EXTRA_FLAGS += -DLINUX
+  KODI_CONFIG_OPTIONS += --enable-codec=imxvpu --disable-openmax
+  KODI_EXTRA_CFLAGS += -DLINUX
   ifeq (x11, $(KODI_WS))
-    KODI_EXTRA_FLAGS += -DEGL_API_X11
+    KODI_EXTRA_CFLAGS += -DEGL_API_X11
   endif
-  ifeq(fb, $(KODI_WS))
-    KODI_EXTRA_FLAGS += -DEGL_API_FB
+  ifeq (fb, $(KODI_WS))
+    KODI_EXTRA_CFLAGS += -DEGL_API_FB
   endif
 endif
 
@@ -100,7 +115,7 @@ override_dh_clean:
 override_dh_auto_configure: 
 	./bootstrap
 	find $(SOURCESDIRS) -maxdepth 1 -name ffmpeg-2.6.0-fix-Isengard-alpha.tar.gz -exec cp -v {} ./tools/depends/target/ffmpeg/ \; -quit || true
-	dh_auto_configure -- $(KODI_CONFIG_OPTIONS) CFLAGS="$(CFLAGS) $(KODI_EXTRA_FLAGS)" CXXFLAGS="$(CXXFLAGS) $(KODI_EXTRA_FLAGS)"
+	dh_auto_configure -- $(KODI_CONFIG_OPTIONS) CFLAGS="$(CFLAGS) $(KODI_EXTRA_CFLAGS)" CXXFLAGS="$(CXXFLAGS) $(KODI_EXTRA_CFLAGS)"
 
 override_dh_auto_install:
 	$(MAKE) install DESTDIR=$(CURDIR)/debian/tmp
