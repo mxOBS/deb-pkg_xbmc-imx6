@@ -1,6 +1,6 @@
 #pragma once
 /*
- *      Copyright (C) 2005-2013 Team XBMC
+ *      Copyright (C) 2015 Team XBMC
  *      http://xbmc.org
  *
  *  This Program is free software; you can redistribute it and/or modify
@@ -19,27 +19,26 @@
  *
  */
 
-#include "IFile.h"
-#include "CurlFile.h"
+#include "addons/Resource.h"
 
-namespace XFILE
+namespace ADDON
 {
-  class CDAVFile : public CCurlFile
-  {
-  public:
-    CDAVFile(void);
-    virtual ~CDAVFile(void);
 
-    virtual bool Execute(const CURL& url);
-    virtual bool Delete(const CURL& url);
-    virtual bool Rename(const CURL& url, const CURL& urlnew);
+class CUISoundsResource : public CResource
+{
+public:
+  CUISoundsResource(const AddonProps &props) : CResource(props) {}
+  CUISoundsResource(const cp_extension_t *ext) : CResource(ext) {}
+  virtual ~CUISoundsResource() {}
 
-    virtual bool Exists(const CURL& url);
-    virtual int Stat(const CURL& url, struct __stat64* buffer);
+  virtual AddonPtr Clone() const;
+  virtual bool IsAllowed(const std::string &file) const;
 
-    virtual int GetLastResponseCode() { return lastResponseCode; }
+  virtual bool IsInUse() const;
+  virtual void OnPostInstall(bool restart, bool update, bool modal);
 
-  private:
-    int lastResponseCode;
-  };
+private:
+  CUISoundsResource(const CUISoundsResource &rhs) : CResource(rhs) {}
+};
+
 }
