@@ -2427,12 +2427,10 @@ bool CApplication::OnAction(const CAction &action)
       else
         volume = action.GetAmount() * step;
       if (volume != m_volumeLevel)
-      {
         SetVolume(volume, false);
-        // show visual feedback of volume change...
-        ShowVolumeBar(&action);
-      }
     }
+    // show visual feedback of volume or passthrough indicator
+    ShowVolumeBar(&action);
     return true;
   }
   if (action.GetID() == ACTION_GUIPROFILE_BEGIN)
