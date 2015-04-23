@@ -22,7 +22,6 @@ endif
 
 # always default to x11
 KODI_WS ?= x11
-KODI_WS = fb
 
 # build for i.MX SoC
 KODI_TARGET ?= imx

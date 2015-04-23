@@ -98,7 +98,7 @@ Build-Depends: debhelper (>= 7.0.50~),
  zlib1g-dev,
  libvpu-imx6-dev,
  libfslvpuwrap-dev,
- gpu-viv-bin-fb-dev (>= 5)
+ gpu-viv-bin-x11-dev (>= 5)
 Standards-Version: 3.9.4
 Homepage: http://kodi.tv/
 Vcs-Git: https://github.com/mxOBS/deb-pkg_xbmc-imx6.git

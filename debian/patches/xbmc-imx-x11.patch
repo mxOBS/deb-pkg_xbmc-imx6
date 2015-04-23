@@ -1,0 +1,31 @@
+diff --git a/xbmc/windowing/egl/EGLNativeTypeIMX.cpp b/xbmc/windowing/egl/EGLNativeTypeIMX.cpp
+index 6ab42b1..c9de8fb 100644
+--- a/xbmc/windowing/egl/EGLNativeTypeIMX.cpp
++++ b/xbmc/windowing/egl/EGLNativeTypeIMX.cpp
+@@ -181,7 +181,11 @@ bool CEGLNativeTypeIMX::CreateNativeDisplay()
+ 
+ bool CEGLNativeTypeIMX::CreateNativeWindow()
+ {
+-#ifdef HAS_IMXVPU
++#if defined(HAS_IMXVPU) && defined (EGL_API_X11)
++  // TODO: honor native_display_name (wherever it comes from)
++  m_window = XOpenDisplay(NULL);
++  m_nativeWindow = &m_window;
++#elif defined(HAS_IMXVPU)
+   m_window = fbCreateWindow(m_display, 0, 0, 0, 0);
+   m_nativeWindow = &m_window;
+   return true;
+@@ -224,7 +228,12 @@ bool CEGLNativeTypeIMX::DestroyNativeDisplay()
+ 
+ bool CEGLNativeTypeIMX::DestroyNativeWindow()
+ {
+-#ifdef HAS_IMXVPU
++#if defined(HAS_IMXVPU) && defined (EGL_API_X11)
++  if (m_window)
++    XCloseDisplay(m_nativeWindow);
++  m_window = NULL;
++  return true;
++#elif defined(HAS_IMXVPU)
+   if (m_window)
+     fbDestroyWindow(m_window);
+   m_window =  NULL;
