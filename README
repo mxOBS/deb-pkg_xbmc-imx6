@@ -1,0 +1,29 @@
+Packaging for Kodi
+
+This set of tools intends to cover all build flavors of kodi,
+such as x11 desktop PCs, framebuffer arm boards, raspberrypi ...
+
+The actual debian source-package is generated using:
+./make.sh <windowsystem> <gllibrary> <target>
+all arguments are optional, however they need to be in this order.
+
+Currently known window-systems are:
+fb - Linux framebuffer (none)
+x11 - X.org
+
+GL libraries are
+gl - Desktop OpenGL
+gles - OpenGL-ES
+
+build targets
+generic - standard build for desktop PCs
+imx - optimize for i.MX SoCs
+
+The resulting files are:
+kodi_VERSION.debian.tar.gz
+kodi_VERSION.dsc
+
+These can be used to build kodi using dpkg-buildpackage:
+dpkg-source -x kodi_VERSION.dsc
+cd kodi-VERSION
+dpkg-buildpackage

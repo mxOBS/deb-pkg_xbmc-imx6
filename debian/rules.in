@@ -9,9 +9,13 @@ include /usr/share/dpkg/buildflags.mk
 # KODI_WS [x11,fb]
 # KODI_TARGET [imx]
 
+KODI_GL = @KODI_GL@
+KODI_WS = @KODI_WS@
+KODI_TARGET = @KODI_TARGET@
+
 # choose some reasonable defaults
 # perform release build unless told otherwise
-KODI_RELEASE = yes
+KODI_RELEASE ?= yes
 
 # on arm, default to gles
 ifeq (arm,$(shell dpkg-architecture -qDEB_HOST_ARCH_CPU))
@@ -124,20 +128,15 @@ override_dh_clean:
 
 override_dh_auto_configure: 
 	./bootstrap
-	find $(SOURCESDIRS) -maxdepth 1 -name ffmpeg-2.6.0-fix-Isengard-alpha.tar.gz -exec cp -v {} ./tools/depends/target/ffmpeg/ \; -quit || true
+	find $(SOURCESDIRS) -maxdepth 1 -name ffmpeg-2.6.0-fix-Isengard-alpha.tar.gz -exec cp -v {} ./tools/depends/target/ffmpeg/ \; -quit 2>/dev/null || true
 	dh_auto_configure -- $(KODI_CONFIG_OPTIONS) CFLAGS="$(CFLAGS) $(KODI_EXTRA_CFLAGS)" CXXFLAGS="$(CXXFLAGS) $(KODI_EXTRA_CFLAGS)"
 
 override_dh_auto_install:
-	$(MAKE) install DESTDIR=$(CURDIR)/debian/tmp
-	$(MAKE) eventclients DESTDIR=$(CURDIR)/debian/tmp \
-		WII_EXTRA_OPTS=-DCWIID_OLD
+	dh_auto_install
+	$(MAKE) eventclients DESTDIR=$(CURDIR)/debian/tmp WII_EXTRA_OPTS=-DCWIID_OLD
 
 override_dh_install:
-	dh_install --sourcedir=$(CURDIR)/debian/tmp -XLICENCE \
-		-XLicence.txt -XLicense.txt -XLiberationSans-Regular.ttf \
-		-XDejaVuSans.ttf -XDejaVuSans-Bold.ttf
-	# Delete license file from package
-	rm -f debian/kodi/usr/share/kodi/addons/script.recentlyadded/LICENSE.txt
+	dh_install --list-missing -XLICENSE.txt -XLicense.txt
 
 override_dh_makeshlibs:
 	# We don't install shared libraries in standard locations so don't run
