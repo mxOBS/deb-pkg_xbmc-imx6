@@ -90,13 +90,24 @@ KODI_EXTRA_CFLAGS=
 
 # target-specific options
 ifeq (imx, $(KODI_TARGET))
-  KODI_CONFIG_OPTIONS += --enable-codec=imxvpu --disable-openmax
+  # openmax is broken by vivante egl headers
+  KODI_CONFIG_OPTIONS += --disable-openmax
+
+  # vivante EGL requires LINUX to be defined
   KODI_EXTRA_CFLAGS += -DLINUX
+
+  # select window-system (for vivante EGL)
   ifeq (x11, $(KODI_WS))
     KODI_EXTRA_CFLAGS += -DEGL_API_X11
   endif
   ifeq (fb, $(KODI_WS))
     KODI_EXTRA_CFLAGS += -DEGL_API_FB
+  endif
+
+  # enable VPU
+  # currently only works on framebuffer
+  ifeq (fb, $(KODI_WS))
+    KODI_EXTRA_CFLAGS += --enable-codec=imxvpu
   endif
 endif
 
