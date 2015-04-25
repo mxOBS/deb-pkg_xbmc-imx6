@@ -9,9 +9,13 @@ include /usr/share/dpkg/buildflags.mk
 # KODI_WS [x11,fb]
 # KODI_TARGET [imx]
 
+KODI_GL = gles
+KODI_WS = fb
+KODI_TARGET = imx
+
 # choose some reasonable defaults
 # perform release build unless told otherwise
-KODI_RELEASE = yes
+KODI_RELEASE ?= yes
 
 # on arm, default to gles
 ifeq (arm,$(shell dpkg-architecture -qDEB_HOST_ARCH_CPU))
@@ -27,12 +31,7 @@ KODI_WS ?= x11
 KODI_TARGET ?= imx
 
 # set generic build options
-KODI_CONFIG_OPTIONS = \
-  --disable-profiling \
-  --disable-asap-codec \
-  --disable-mid \
-  --disable-ccache \
-  --disable-mdnsembedded
+KODI_CONFIG_OPTIONS =   --disable-profiling   --disable-asap-codec   --disable-mid   --disable-ccache   --disable-mdnsembedded
 
 # release / debug build
 ifeq (yes,$(KODI_RELEASE))
@@ -42,47 +41,21 @@ else
 endif
 
 # enable as many features as possible
-KODI_CONFIG_OPTIONS += \
-  --enable-joystick \
-  --enable-pulse \
-  --enable-rtmp \
-  --enable-avahi \
-  --enable-webserver \
-  --enable-optical-drive \
-  --enable-texturepacker \
-  --enable-nfs \
-  --enable-libcec \
-  --enable-afpclient \
-  --enable-airtunes \
-  --enable-libbluray
+KODI_CONFIG_OPTIONS +=   --enable-joystick   --enable-pulse   --enable-rtmp   --enable-avahi   --enable-webserver   --enable-optical-drive   --enable-texturepacker   --enable-nfs   --enable-libcec   --enable-afpclient   --enable-airtunes   --enable-libbluray
 
 # select renderer-specific options
 ifeq (gles, $(KODI_GL))
-  KODI_CONFIG_OPTIONS += \
-    --disable-gl \
-    --disable-vdpau \
-    --disable-vaapi \
-    --enable-gles
+  KODI_CONFIG_OPTIONS +=     --disable-gl     --disable-vdpau     --disable-vaapi     --enable-gles
 else
-  KODI_CONFIG_OPTIONS += \
-    --disable-gles \
-    --disable-openmax \
-    --disable-vtbdecoder \
-    --enable-gl \
-    --enable-vaapi \
-    --enable-vdpau
+  KODI_CONFIG_OPTIONS +=     --disable-gles     --disable-openmax     --disable-vtbdecoder     --enable-gl     --enable-vaapi     --enable-vdpau
 endif
 
 # select window-system-specific options
 ifeq (x11, $(KODI_WS))
-  KODI_CONFIG_OPTIONS += \
-    --enable-x11 \
-    --enable-xrandr
+  KODI_CONFIG_OPTIONS +=     --enable-x11     --enable-xrandr
 endif
 ifeq (fb, $(KODI_WS))
-  KODI_CONFIG_OPTIONS += \
-    --disable-x11 \
-    --disable-xrandr
+  KODI_CONFIG_OPTIONS +=     --disable-x11     --disable-xrandr
 endif
 
 # additional compile flags
@@ -124,18 +97,15 @@ override_dh_clean:
 
 override_dh_auto_configure: 
 	./bootstrap
-	find $(SOURCESDIRS) -maxdepth 1 -name ffmpeg-2.6.0-fix-Isengard-alpha.tar.gz -exec cp -v {} ./tools/depends/target/ffmpeg/ \; -quit || true
+	find $(SOURCESDIRS) -maxdepth 1 -name ffmpeg-2.6.0-fix-Isengard-alpha.tar.gz -exec cp -v {} ./tools/depends/target/ffmpeg/ ; -quit || true
 	dh_auto_configure -- $(KODI_CONFIG_OPTIONS) CFLAGS="$(CFLAGS) $(KODI_EXTRA_CFLAGS)" CXXFLAGS="$(CXXFLAGS) $(KODI_EXTRA_CFLAGS)"
 
 override_dh_auto_install:
 	$(MAKE) install DESTDIR=$(CURDIR)/debian/tmp
-	$(MAKE) eventclients DESTDIR=$(CURDIR)/debian/tmp \
-		WII_EXTRA_OPTS=-DCWIID_OLD
+	$(MAKE) eventclients DESTDIR=$(CURDIR)/debian/tmp 		WII_EXTRA_OPTS=-DCWIID_OLD
 
 override_dh_install:
-	dh_install --sourcedir=$(CURDIR)/debian/tmp -XLICENCE \
-		-XLicence.txt -XLicense.txt -XLiberationSans-Regular.ttf \
-		-XDejaVuSans.ttf -XDejaVuSans-Bold.ttf
+	dh_install --sourcedir=$(CURDIR)/debian/tmp -XLICENCE 		-XLicence.txt -XLicense.txt -XLiberationSans-Regular.ttf 		-XDejaVuSans.ttf -XDejaVuSans-Bold.ttf
 	# Delete license file from package
 	rm -f debian/kodi/usr/share/kodi/addons/script.recentlyadded/LICENSE.txt
 
