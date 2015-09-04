@@ -1,3 +1,9 @@
+kodi (2:16.0-1) stable; urgency=medium
+
+ * update to 16.0a2
+
+ -- Josua Mayer <unknown>  Fri, 04 Sep 2015 19:51:26 +0200
+
 kodi (2:15.0~git20150423-1) stable; urgency=low
 
   * new packaging
